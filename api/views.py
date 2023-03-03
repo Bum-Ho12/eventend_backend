@@ -109,7 +109,7 @@ def user_update_view(request):
             data['username'] = account.username
             data['category'] = account.category
             if obj.profile_picture:
-                data['profile_pic'] = obj.profile_picture.url
+                data['profile_picture'] = obj.profile_picture.url
             token = Token.objects.get(user=account).key
             data['token'] = token
             data['response'] = "successfully updated Account"
@@ -249,7 +249,6 @@ def concert_update_post(request):
     files = request.FILES.get('concert_picture')
     if request.method =='PUT':
         try:
-            model_class = Concert
             sr= ConcertSerializer
             concert = Concert.objects.get(id=info)
             if files:
