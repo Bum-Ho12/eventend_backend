@@ -43,6 +43,9 @@ def registration_view(request):
             data['username'] = account.username
             if obj.profile_picture:
                 data['profile_picture'] = obj.profile_picture.url
+            data['category'] = account.category
+            # data['location'] = account.location
+            # data['username'] = account.username
             token = Token.objects.get(user=account).key
             data['token'] = token
         else :
