@@ -7,7 +7,7 @@ class AccountSerializer(serializers.ModelSerializer):
     class  Meta:
         model = Account
         fields =    ['email','username', 'password','profile_picture',
-                    'description','website','location','services','concerts','long','lat','phone_number'
+                    'description','website','location','long','lat','phone_number'
                     ,'social_media_link','category','weekday_from','weekday_to','from_hour','to_hour']
         extra_kwargs = {
             'password': {'write_only':True},
@@ -27,29 +27,51 @@ class AccountSerializer(serializers.ModelSerializer):
             return account
 
 class ConcertSerializer(serializers.ModelSerializer):
+    concert = serializers.SerializerMethodField('get_concert')
     class Meta:
         model = Concert
-        fields = '__all__'
+        fields = ['id','title','concert','description','price','long','lat','from_hour','to_hour',
+            'web_link','traffic','concert_picture','event_date','location' ,'tickets']
         depth=1
+    def get_concert(self, concert):
+            concert = {
+                'organizer_id':concert.owner.id,
+                'organizer': concert.owner.username,
+                'organizer_profile_picture':concert.owner.profile_picture.url,
+                # 'organizer_media_link': concert.owner.social_media_link,
+            }
+            return concert
 
 class ServiceSerializer(serializers.ModelSerializer):
+    service = serializers.SerializerMethodField('get_service')
     class Meta:
         model = Service
-        fields = '__all__'
+        fields = ['id','title','service','description','price','long','lat' ,
+            'permit','web_link','traffic' ]
         depth=1
+    def get_service(self, service):
+            service = {
+                'organizer_id':service.owner.id,
+                'organizer': service.owner.username,
+                'organizer_profile_picture':service.owner.profile_picture.url,
+                'organizer_media_link': service.owner.social_media_link,
+            }
+            return service
 
 class RequestSerializer(serializers.ModelSerializer):
-    # service = serializers.SerializerMethodField('get_service')
+    # service = serializers.SerializerMethodField('get_request')
     class Meta:
         model = Request
         fields = '__all__'
         depth=1
-        # def get_service(self, service):
-        #     service = {
-        #     'service_id': service.service_requested.id,
-        #     'service_title': service.service_requested.title,
+        # def get_request(self, request):
+        #     request = {
+        #         'organizer_id':request.user.id,
+        #         'organizer': request.user.username,
+        #         'organizer_profile_picture':request.user.profile_picture,
+        #         'organizer_media_link': request.user.social_media_link,
         #     }
-        #     return service
+        #     return request
 
 class TicketSerializer(serializers.ModelSerializer):
     class Meta:

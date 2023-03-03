@@ -62,48 +62,6 @@ TICKET_STATUS = [
     (4, _("Done")),
     ]
 
-class Concert(models.Model):
-    title                       = models.CharField(max_length=100,blank=False)
-    organizer                   = models.CharField(max_length=200,blank=True)
-    organizer_id                = models.CharField(max_length=200,blank=True,null=True)
-    organizer_profile_picture   = models.CharField(max_length=100, blank=True,null=True)
-    concert_picture             = models.ImageField(blank=True)
-    event_date                  = models.CharField(blank=False,max_length= 50)
-    from_hour                   = models.TimeField()
-    to_hour                     = models.TimeField()
-    location                    = models.CharField(blank=True,null=True,max_length=100)
-    long                        = models.DecimalField(max_digits=9, decimal_places=6)
-    lat                         = models.DecimalField(max_digits=9, decimal_places=6)
-    description                 = models.CharField(blank=True,null = True,max_length=400)
-    price                       = models.DecimalField(max_digits=10, decimal_places=2,null=True)
-    web_link                    = models.CharField(blank=True,null = True, max_length=100)
-    traffic                     = models.IntegerField(blank=True,default= 0)
-    tickets                     = models.IntegerField(blank=True,default= 0)
-
-    class Meta:
-        verbose_name_plural = 'Concerts'
-    def  __str__(self):
-        return f"{self.title}"
-
-class Service(models.Model):
-    title                       = models.CharField(max_length=100,blank=False)
-    organizer_id                = models.CharField(max_length=100,blank=True)
-    organizer                   = models.CharField(max_length=200,blank=True)
-    organizer_profile_picture   = models.CharField(max_length=100, blank=True,null=True)
-    organizer_media_link        = models.CharField(max_length=100, blank=True,null=True)
-    description                 = models.CharField(blank=True,null = True,max_length=400)
-    price                       = models.DecimalField(max_digits=10, decimal_places=2,null=True)
-    long                        = models.DecimalField(max_digits=9, decimal_places=6)
-    lat                         = models.DecimalField(max_digits=9, decimal_places=6)
-    permit                      = models.FileField(upload_to='certificates/',blank=True,null=True)
-    web_link                    = models.CharField(blank=True,null = True, max_length=200)
-    traffic                     = models.IntegerField(blank=True,default= 0)
-
-    class Meta:
-        verbose_name_plural = 'Services'
-    def  __str__(self):
-        return f"{self.title}"
-
 class Request(models.Model):
     client_id                   = models.CharField(max_length=100,blank=True)
     client_name                 = models.CharField(max_length=100,blank=True)
@@ -131,8 +89,8 @@ class Account(AbstractBaseUser, PermissionsMixin):
     website                        = models.CharField(blank = True,null=True,max_length=100)
     social_media_link              = models.CharField(blank = True,null=True,max_length=100)
     location                       = models.CharField(blank=True,null=True,max_length=100)
-    services                       = models.ManyToManyField(Service,blank=True)
-    concerts                       = models.ManyToManyField(Concert,blank=True)
+    # services                       = models.ManyToManyField(Service,blank=True)
+    # concerts                       = models.ManyToManyField(Concert,blank=True)
     weekday_from                   = models.PositiveSmallIntegerField(choices=WEEKDAYS,null=True,
                                         blank=True)
     weekday_to                     = models.PositiveSmallIntegerField(choices=WEEKDAYS,blank=True,
@@ -172,6 +130,43 @@ class Account(AbstractBaseUser, PermissionsMixin):
 def create_auth_token(sender, instance=None, created = False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+
+class Concert(models.Model):
+    title                       = models.CharField(max_length=100,blank=False)
+    owner                       = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    concert_picture             = models.ImageField(blank=True)
+    event_date                  = models.CharField(blank=False,max_length= 50)
+    from_hour                   = models.TimeField()
+    to_hour                     = models.TimeField()
+    location                    = models.CharField(blank=True,null=True,max_length=100)
+    long                        = models.DecimalField(max_digits=9, decimal_places=6)
+    lat                         = models.DecimalField(max_digits=9, decimal_places=6)
+    description                 = models.CharField(blank=True,null = True,max_length=400)
+    price                       = models.DecimalField(max_digits=10, decimal_places=2,null=True)
+    web_link                    = models.CharField(blank=True,null = True, max_length=100)
+    traffic                     = models.IntegerField(blank=True,default= 0)
+    tickets                     = models.IntegerField(blank=True,default= 0)
+
+    class Meta:
+        verbose_name_plural = 'Concerts'
+    def  __str__(self):
+        return f"{self.title}"
+
+class Service(models.Model):
+    title                       = models.CharField(max_length=100,blank=False)
+    owner                       = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    description                 = models.CharField(blank=True,null = True,max_length=400)
+    price                       = models.DecimalField(max_digits=10, decimal_places=2,null=True)
+    long                        = models.DecimalField(max_digits=9, decimal_places=6)
+    lat                         = models.DecimalField(max_digits=9, decimal_places=6)
+    permit                      = models.FileField(upload_to='certificates/',blank=True,null=True)
+    web_link                    = models.CharField(blank=True,null = True, max_length=200)
+    traffic                     = models.IntegerField(blank=True,default= 0)
+
+    class Meta:
+        verbose_name_plural = 'Services'
+    def  __str__(self):
+        return f"{self.title}"
 
 class Ticket(models.Model):
     concert_id                     = models.CharField(max_length=100,blank=True)

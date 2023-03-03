@@ -235,7 +235,6 @@ def category_view(request):
 @parser_classes([MultiPartParser, FormParser])
 def concert_create_post(request):
     user = request.user
-    print(user.username)
     if request.method == 'POST':
         files = request.FILES.get('concert_picture')
         try:
@@ -244,23 +243,18 @@ def concert_create_post(request):
                 request.data.pop('concert_picture')
                 serializer = sr(data=request.data)
                 if serializer.is_valid():
-                    qs = serializer.save()
-                    qs.organizer = user.username
-                    qs.organizer_id = user.pk
-                    qs.organizer_profile_picture = user.profile_picture.url
-                    qs.concert_picture = request.FILES.get('concert_picture')
-                    qs.save()
+                    serializer.save(owner = user)
+                    obj = Concert.objects.get(id=serializer.data['id'])
                     context = serializer.data
-                    context["concert_picture"] = qs.concert_picture.url
+                    obj.concert_picture = request.FILES.get('concert_picture')
+                    obj.save()
+                    context['concert_picture'] = obj.concert_picture.url
                     return Response(context, status=status.HTTP_201_CREATED)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
                 serializer = sr(data=request.data)
                 if serializer.is_valid():
-                    qs = serializer.save()
-                    qs.organizer = user.username
-                    qs.organizer_id = user.id
-                    qs.organizer_profile_picture = user.profile_picture.url
+                    serializer.save(owner = user)
                     context = serializer.data
                     return Response(context, status=status.HTTP_201_CREATED)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -288,28 +282,24 @@ def concert_update_post(request):
                 request.data.pop('concert_picture')
                 serializer = sr(concert,data=request.data,partial=True)
                 if serializer.is_valid():
-                    qs = serializer.save()
-                    qs.organizer = user.username
-                    qs.organizer_id = user.pk
-                    qs.organizer_profile_picture = user.profile_picture.url
-                    qs.concert_picture = request.FILES.get('concert_picture')
-                    qs.save()
+                    serializer.save(owner = user)
+                    obj = Concert.objects.get(id=serializer.data['id'])
                     context = serializer.data
-                    context["concert_picture"] = qs.concert_picture.url
+                    obj.concert_picture = request.FILES.get('concert_picture')
+                    obj.save()
+                    print(obj.concert_picture.url)
+                    context['concert_picture'] = obj.concert_picture.url
                     return Response(context, status=status.HTTP_201_CREATED)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
                 serializer = sr(concert,data=request.data,partial=True)
                 if serializer.is_valid():
-                    qs = serializer.save()
-                    qs.organizer = user.username
-                    qs.organizer_id = user.pk
-                    qs.organizer_profile_picture = user.profile_picture.url
-                    qs.save()
+                    serializer.save(owner = user)
                     context = serializer.data
                     return Response(context, status=status.HTTP_201_CREATED)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except:
+        except Exception as e:
+            print(e)
             rep = {}
             rep['response'] = 'no such record in the database'
             return Response(data=rep,status=status.HTTP_404_NOT_FOUND)
@@ -323,18 +313,12 @@ def concert_update_post(request):
 @parser_classes([MultiPartParser, FormParser])
 def service_create_post(request):
     user = request.user
-    print(user.username)
     if request.method == 'POST':
         try:
             sr= ServiceSerializer
             serializer = sr(data=request.data)
             if serializer.is_valid():
-                qs = serializer.save()
-                qs.organizer = user.username
-                qs.organizer_id = user.id
-                qs.organizer_profile_picture = user.profile_picture.url
-                qs.organizer_media_link = user.social_media_link
-                qs.save()
+                serializer.save(owner = user)
                 context = serializer.data
                 return Response(context, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -359,12 +343,7 @@ def service_update_post(request):
             service = Service.objects.get(id=info)
             serializer = sr(service,data=request.data,partial=True)
             if serializer.is_valid():
-                qs = serializer.save()
-                qs.organizer = user.username
-                qs.organizer_id = user.pk
-                qs.organizer_profile_picture = user.profile_picture.url
-                qs.organizer_media_link = user.social_media_link
-                qs.save()
+                serializer.save(owner = user)
                 context = serializer.data
                 return Response(context, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
