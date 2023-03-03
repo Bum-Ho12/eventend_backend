@@ -113,6 +113,7 @@ def user_update_view(request):
             data['category'] = account.category
             if obj.profile_picture:
                 data['profile_picture'] = obj.profile_picture.url
+            data['category'] = account.category
             token = Token.objects.get(user=account).key
             data['token'] = token
             data['response'] = "successfully updated Account"
@@ -144,6 +145,7 @@ def custom_login(request):
     data['email'] = user.email
     data['username'] = user.username
     data['profile_pic'] = user.profile_picture.url
+    data['category'] = user.category
     return Response(data=data, status=status.HTTP_200_OK)
 
 #deletes user profile
