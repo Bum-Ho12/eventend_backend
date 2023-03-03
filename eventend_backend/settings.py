@@ -31,7 +31,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'api.Account'
 # Application definition
@@ -154,8 +154,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 MEDIA_URL = "media/"
-MEDIA_ROOT= 'media'
-STATIC_ROOT = "static"
+MEDIA_ROOT= '/home/eventend/eventend_backend/media/'
+STATIC_ROOT = "/home/eventend/eventend_backend/static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
