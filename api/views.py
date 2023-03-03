@@ -173,6 +173,29 @@ def logout_view(request):
     return Response(data=data,status=status.HTTP_200_OK)
 
 
+# code for getting each category of posts
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def category_view(request):
+    category = request.data.get('category')
+    try:
+        if category=='concerts':
+            owner = Concert.objects.all()
+            sr= ConcertSerializer(owner, many=True)
+            data = sr.data
+            return Response(data=data,status=status.HTTP_200_OK)
+        elif category=='services':
+            owner = Service.objects.all()
+            sr= ServiceSerializer(owner, many=True)
+            data = sr.data
+            return Response(data=data,status=status.HTTP_200_OK)
+    except category.IsEmpty:
+        data = {}
+        data['response'] = 'no such record in the database'
+        return Response(data=data,status=status.HTTP_404_NOT_FOUND)
+    return Response(status=status.HTTP_200_OK)
+
+
 # for creating an Ad post
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -278,6 +301,7 @@ def service_create_post(request):
                 qs.organizer = user.username
                 qs.organizer_id = user.id
                 qs.organizer_profile_picture = user.profile_picture.url
+                qs.save()
                 context = serializer.data
                 return Response(context, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -12,6 +12,7 @@ urlpatterns= [
     path('logout/', views.logout_view, name = 'logout'),
     path('user_delete/', views.userDelete_view, name='user_delete'),
     path('user_update/', views.user_update_view, name='user_update'),
+    path('category/',views.category_view,name='category'),
     path('concert_create/', views.concert_create_post,name='create'),
     path('concert_update/',views.concert_update_post, name='update'),
     path('service_create/', views.service_create_post,name='create'),
