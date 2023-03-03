@@ -44,8 +44,16 @@ def registration_view(request):
             if obj.profile_picture:
                 data['profile_picture'] = obj.profile_picture.url
             data['category'] = account.category
-            # data['location'] = account.location
-            # data['username'] = account.username
+            data['location']=account.location
+            data['weekday_from']=account.weekday_from
+            data['weekday_to']=account.weekday_to
+            data['from_hour']=account.from_hour
+            data['to_hour']=account.to_hour
+            data['social_media_link']=account.social_media_link
+            data['description']=account.description
+            data['phone_number']=account.phone_number
+            data['long']=account.long
+            data['lat']=account.lat
             token = Token.objects.get(user=account).key
             data['token'] = token
         else :
@@ -116,6 +124,16 @@ def user_update_view(request):
             data['category'] = account.category
             token = Token.objects.get(user=account).key
             data['token'] = token
+            data['location']=account.location
+            data['weekday_from']=account.weekday_from
+            data['weekday_to']=account.weekday_to
+            data['from_hour']=account.from_hour
+            data['to_hour']=account.to_hour
+            data['social_media_link']=account.social_media_link
+            data['description']=account.description
+            data['phone_number']=account.phone_number
+            data['long']=account.long
+            data['lat']=account.lat
             data['response'] = "successfully updated Account"
             return Response(data = data, status=status.HTTP_200_OK)
         else :
@@ -144,8 +162,18 @@ def custom_login(request):
     data = {'token': user_token}
     data['email'] = user.email
     data['username'] = user.username
-    data['profile_pic'] = user.profile_picture.url
+    data['profile_picture'] = user.profile_picture.url
     data['category'] = user.category
+    data['location']=user.location
+    data['weekday_from']=user.weekday_from
+    data['weekday_to']=user.weekday_to
+    data['from_hour']=user.from_hour
+    data['to_hour']=user.to_hour
+    data['social_media_link']=user.social_media_link
+    data['description']=user.description
+    data['phone_number']=user.phone_number
+    data['long']=user.long
+    data['lat']=user.lat
     return Response(data=data, status=status.HTTP_200_OK)
 
 #deletes user profile
