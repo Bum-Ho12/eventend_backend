@@ -90,6 +90,7 @@ class Service(models.Model):
     organizer_id                = models.CharField(max_length=100,blank=True)
     organizer                   = models.CharField(max_length=200,blank=True)
     organizer_profile_picture   = models.CharField(max_length=100, blank=True,null=True)
+    organizer_media_link        = models.CharField(max_length=100, blank=True,null=True)
     description                 = models.CharField(blank=True,null = True,max_length=400)
     price                       = models.DecimalField(max_digits=10, decimal_places=2,null=True)
     long                        = models.DecimalField(max_digits=9, decimal_places=6)

@@ -333,6 +333,7 @@ def service_create_post(request):
                 qs.organizer = user.username
                 qs.organizer_id = user.id
                 qs.organizer_profile_picture = user.profile_picture.url
+                qs.organizer_media_link = user.social_media_link
                 qs.save()
                 context = serializer.data
                 return Response(context, status=status.HTTP_201_CREATED)
@@ -362,6 +363,7 @@ def service_update_post(request):
                 qs.organizer = user.username
                 qs.organizer_id = user.pk
                 qs.organizer_profile_picture = user.profile_picture.url
+                qs.organizer_media_link = user.social_media_link
                 qs.save()
                 context = serializer.data
                 return Response(context, status=status.HTTP_201_CREATED)
