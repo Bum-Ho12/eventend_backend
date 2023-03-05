@@ -6,6 +6,7 @@ app_name = 'api'
 urlpatterns= [
     # authentication
     path('',views.registration_view,name='userS'),
+    path('check_network/',views.confirmNetwork, name='confirm_network'),
     path('verify/',views.verify_user, name='user_verification'),
     path('reverify/',views.re_verification, name = 'reverification'),
     path('login/', views.custom_login, name='login'),

@@ -10,7 +10,14 @@ from  rest_framework.authtoken.models import Token
 from rest_framework import status
 from  rest_framework.parsers import MultiPartParser, FormParser
 import random
-# Create your views here.
+
+#network confirmation
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def confirmNetwork(request):
+    if request.method =='GET':
+        return Response(data=True,status=status.HTTP_200_OK)
+# to send verification email.
 def activateEmail(user,to_email,code):
     send_mail(
         'Account Activation',
