@@ -188,3 +188,20 @@ class Ticket(models.Model):
         verbose_name_plural = 'Tickets'
     def  __str__(self):
         return f"{self.name}"
+
+class FavoriteConcert(models.Model):
+    owner                       = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    concert                     = models.ForeignKey(Concert, on_delete = models.CASCADE)
+    created_at                  = models.DateTimeField(auto_now_add=True,null=True)
+    updated_at                  = models.DateTimeField(auto_now=True,null=True)
+
+    class Meta:
+        verbose_name_plural = 'FavoriteConcerts'
+class FavoriteService(models.Model):
+    owner                       = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)
+    service                     = models.ForeignKey(Service, on_delete = models.CASCADE)
+    created_at                  = models.DateTimeField(auto_now_add=True)
+    updated_at                  = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = 'FavoriteServices'

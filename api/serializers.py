@@ -1,5 +1,5 @@
 from dataclasses import field
-from .models import  (Account,Concert,Service,Ticket,Request)
+from .models import  (Account,Concert,Service,Ticket,Request,FavoriteConcert,FavoriteService)
 from rest_framework import serializers
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -81,4 +81,49 @@ class TicketSerializer(serializers.ModelSerializer):
                     'ticket_number','assignee_email','status','description','client','phone_number']
         depth=1
 
+class FavoriteConcertSerializer(serializers.ModelSerializer):
+    owner = serializers.SerializerMethodField('get_owner')
+    concert = serializers.SerializerMethodField('get_concert')
+    class Meta:
+        model = FavoriteConcert
+        fields = ['owner','id','concert']
 
+    def get_owner(self, favorite):
+            favorite = {
+                'organizer_id':favorite.owner.id,
+                'organizer': favorite.owner.username,
+                'organizer_profile_picture':favorite.owner.profile_picture.url,
+                'organizer_media_link': favorite.owner.social_media_link,
+            }
+            return favorite
+
+    def get_concert(self, favorite):
+            favorite = {
+                'concert_id':favorite.concert.id,
+                'concert_title': favorite.concert.title,
+                'concert_picture': favorite.concert.concert_picture
+            }
+            return favorite
+
+class FavoriteServiceSerializer(serializers.ModelSerializer):
+    owner = serializers.SerializerMethodField('get_owner')
+    service = serializers.SerializerMethodField('get_service')
+    class Meta:
+        model = FavoriteService
+        fields = ['owner','id','service']
+
+    def get_owner(self, favorite):
+            favorite = {
+                'organizer_id':favorite.owner.id,
+                'organizer': favorite.owner.username,
+                'organizer_profile_picture':favorite.owner.profile_picture.url,
+                'organizer_media_link': favorite.owner.social_media_link,
+            }
+            return favorite
+
+    def get_service(self, favorite):
+            favorite = {
+                'service_id':favorite.service.id,
+                'service_title': favorite.service.title,
+            }
+            return favorite

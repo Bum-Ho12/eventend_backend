@@ -4,8 +4,9 @@ from django.conf import settings
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes,parser_classes
 from rest_framework.permissions import  IsAuthenticated, AllowAny
-from .models import (Account,Service,Concert,Ticket,Request)
-from .serializers import (AccountSerializer,ServiceSerializer,TicketSerializer,ConcertSerializer,RequestSerializer)
+from .models import (Account,Service,Concert,Ticket,Request,FavoriteConcert,FavoriteService)
+from .serializers import (AccountSerializer,ServiceSerializer,TicketSerializer,ConcertSerializer,RequestSerializer,
+    FavoriteConcertSerializer,FavoriteServiceSerializer)
 from  rest_framework.authtoken.models import Token
 from rest_framework import status
 from  rest_framework.parsers import MultiPartParser, FormParser
@@ -448,4 +449,61 @@ def all_delete(request):
         else:
             data['response'] = 'no such record in the database'
         return Response(data=data)
+
+# codes for getting each category of favorites
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def concert_favorite_view(request):
+    try:
+        owner = FavoriteConcert.objects.filter(owner = request.user)
+        sr= FavoriteConcertSerializer(owner, many=True)
+        data = sr.data
+        return Response(data=data,status=status.HTTP_200_OK)
+    except Exception as e:
+        data = {}
+        data['response'] = str(e)
+        return Response(data=data,status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def service_favorite_view(request):
+    try:
+        owner = FavoriteService.objects.filter(owner = request.user)
+        sr= FavoriteServiceSerializer(owner, many=True)
+        data = sr.data
+        return Response(data=data,status=status.HTTP_200_OK)
+    except Exception as e:
+        data = {}
+        data['response'] = str(e)
+        return Response(data=data,status=status.HTTP_404_NOT_FOUND)
+
+
+# adds an Ad to favorite
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_to_favorite(request):
+    user = request.user
+    category = request.data.get('category')
+    id = request.data.get('id')
+    if request.method == 'POST':
+        try:
+            if category=='concert':
+                concert_to_insert = Concert.objects.get(id = id)
+                model = FavoriteConcert.objects.create(owner = request.user,concert = concert_to_insert)
+                sr = FavoriteConcertSerializer(model)
+            elif category =='service':
+                service_to_insert = Service.objects.get(id = id)
+                model = FavoriteService.objects.create(owner = request.user,service = service_to_insert)
+                sr = FavoriteServiceSerializer(model)
+            else:
+                return Response(data= 'error in category')
+            data = sr.data
+            return Response(data=data,status=status.HTTP_201_CREATED)
+        except Exception as e:
+            rep = {}
+            rep['response'] = str(e)
+            return Response(data=rep,status=status.HTTP_404_NOT_FOUND)
+
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
