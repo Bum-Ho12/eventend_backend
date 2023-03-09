@@ -101,7 +101,7 @@ class FavoriteConcertSerializer(serializers.ModelSerializer):
             favorite = {
                 'concert_id':favorite.concert.id,
                 'concert_title': favorite.concert.title,
-                'concert_picture': favorite.concert.concert_picture
+                'concert_picture': favorite.concert.concert_picture.url
             }
             return favorite
 
