@@ -1,9 +1,11 @@
 from django.shortcuts import render
 from django.core.mail import  send_mail
-from django.conf import settings
+# from django.conf import settings
+from rest_framework import generics,filters
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes,parser_classes
 from rest_framework.permissions import  IsAuthenticated, AllowAny
+from rest_framework import permissions
 from .models import (Account,Service,Concert,Ticket,Request,FavoriteConcert,FavoriteService)
 from .serializers import (AccountSerializer,ServiceSerializer,TicketSerializer,ConcertSerializer,RequestSerializer,
     FavoriteConcertSerializer,FavoriteServiceSerializer)
@@ -507,3 +509,17 @@ def add_to_favorite(request):
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
+# search functionality
+class SearchConcerts(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    search_fields = ['title', 'price','owner__username']
+    filter_backends = (filters.SearchFilter, )
+    queryset = Concert.objects.all()
+    serializer_class = ConcertSerializer
+
+class SearchServices(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    search_fields = ['title', 'price','owner__username']
+    filter_backends = (filters.SearchFilter, )
+    queryset = Service.objects.all()
+    serializer_class = ServiceSerializer

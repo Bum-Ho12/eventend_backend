@@ -13,17 +13,24 @@ urlpatterns= [
     path('logout/', views.logout_view, name = 'logout'),
     path('user_delete/', views.userDelete_view, name='user_delete'),
     path('user_update/', views.user_update_view, name='user_update'),
+    # fetching
     path('category/',views.category_view,name='category'),
     path('concert_favorites/',views.concert_favorite_view,name='favorites'),
     path('service_favorites/',views.service_favorite_view,name='favorites'),
+    #create,update and delete
     path('concert_create/', views.concert_create_post,name='create'),
     path('concert_update/',views.concert_update_post, name='update'),
     path('service_create/', views.service_create_post,name='create'),
     path('favorite_create/',views.add_to_favorite,name='category_create'),
     path('service_update/',views.service_update_post, name='update'),
+    path('delete/',views.all_delete, name='delete_any'),
+    # other functionalities
+    # request service and ticketing
     path('request_send/', views.request_send,name='send_request'),
     path('ticketing/', views.ticketing,name='ticketing'),
-    path('delete/',views.all_delete, name='delete_any'),
+    # search functionality
+    path('search_concert/', views.SearchConcerts.as_view(),name='search_concert'),
+    path('search_service/', views.SearchServices.as_view(),name='search_service'),
 ]
 
 urlpatterns= format_suffix_patterns(urlpatterns)
