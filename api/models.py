@@ -89,8 +89,6 @@ class Account(AbstractBaseUser, PermissionsMixin):
     website                        = models.CharField(blank = True,null=True,max_length=100)
     social_media_link              = models.CharField(blank = True,null=True,max_length=100)
     location                       = models.CharField(blank=True,null=True,max_length=100)
-    # services                       = models.ManyToManyField(Service,blank=True)
-    # concerts                       = models.ManyToManyField(Concert,blank=True)
     weekday_from                   = models.PositiveSmallIntegerField(choices=WEEKDAYS,null=True,
                                         blank=True)
     weekday_to                     = models.PositiveSmallIntegerField(choices=WEEKDAYS,blank=True,

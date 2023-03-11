@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'api',#application
+    'mpesa',#mpesa transactions
     'rest_framework',
     'rest_framework.authtoken',
     'django_cleanup.apps.CleanupConfig'
@@ -135,6 +136,15 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+MPESA_CONFIG = {
+'CONSUMER_KEY': 'M01zZTtg5VArizU4b4pcr9bhhQwDyj5e',
+'CONSUMER_SECRET': 'XPlJC4Gk6YAKyk2Q',
+'HOST_NAME': 'testapi',
+'PASS_KEY': 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919',
+'SAFARICOM_API': 'https://sandbox.safaricom.co.ke',
+'SHORT_CODE': '174379'
+}
 
 
 # Internationalization

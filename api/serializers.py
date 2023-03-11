@@ -125,5 +125,6 @@ class FavoriteServiceSerializer(serializers.ModelSerializer):
             favorite = {
                 'service_id':favorite.service.id,
                 'service_title': favorite.service.title,
+                'service_owner_profile':favorite.service.owner.profile_picture.url
             }
             return favorite
