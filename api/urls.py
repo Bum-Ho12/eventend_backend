@@ -31,6 +31,8 @@ urlpatterns= [
     # search functionality
     path('search_concert/', views.SearchConcerts.as_view(),name='search_concert'),
     path('search_service/', views.SearchServices.as_view(),name='search_service'),
+    #view account posted concerts and services
+    path('user_posts/',views.account_posts,name = 'user_ads')
 ]
 
 urlpatterns= format_suffix_patterns(urlpatterns)

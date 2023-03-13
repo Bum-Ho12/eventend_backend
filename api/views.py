@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.core.mail import  send_mail
+from collections import OrderedDict
 # from django.conf import settings
 from rest_framework import generics,filters
 from rest_framework.response import Response
@@ -524,4 +525,20 @@ class SearchServices(generics.ListCreateAPIView):
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
 
-
+# adds an Ad to favorite
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def account_posts(request):
+    user = request.user
+    data={}
+    concert_query       = Concert.objects.filter(owner= user.id)
+    service_query       = Service.objects.filter(owner = user.id)
+    #serializing
+    concert_sr          = ConcertSerializer(concert_query,many = True)
+    service_sr          = ServiceSerializer(service_query,many = True)
+    #add to dictionary
+    data['concerts']    = concert_sr.data
+    data['services']    = service_sr.data
+    #reverse the dictionary
+    res = OrderedDict(reversed(list(data.items())))
+    return Response(data = res,status=status.HTTP_200_OK)
