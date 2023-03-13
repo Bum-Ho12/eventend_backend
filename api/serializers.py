@@ -86,7 +86,7 @@ class FavoriteConcertSerializer(serializers.ModelSerializer):
     concert = serializers.SerializerMethodField('get_concert')
     class Meta:
         model = FavoriteConcert
-        fields = ['owner','id','concert']
+        fields = ['owner','id','concert',]
 
     def get_owner(self, favorite):
             favorite = {
@@ -101,7 +101,17 @@ class FavoriteConcertSerializer(serializers.ModelSerializer):
             favorite = {
                 'concert_id':favorite.concert.id,
                 'concert_title': favorite.concert.title,
-                'concert_picture': favorite.concert.concert_picture.url
+                'concert_picture': favorite.concert.concert_picture.url,
+                'event_date':favorite.concert.event_date,
+                'from_hour':favorite.concert.from_hour,
+                'to_hour':favorite.concert.to_hour,
+                'location':favorite.concert.location,
+                'long':favorite.concert.long,
+                'lat':favorite.concert.lat,
+                'description':favorite.concert.description,
+                'price':favorite.concert.price,
+                'traffic':favorite.concert.traffic,
+                'tickets':favorite.concert.tickets,
             }
             return favorite
 
@@ -125,6 +135,12 @@ class FavoriteServiceSerializer(serializers.ModelSerializer):
             favorite = {
                 'service_id':favorite.service.id,
                 'service_title': favorite.service.title,
-                'service_owner_profile':favorite.service.owner.profile_picture.url
+                'service_owner_profile':favorite.service.owner.profile_picture.url,
+                'long': favorite.service.long,
+                'lat': favorite.service.lat,
+                'description': favorite.service.description,
+                'price': favorite.service.price,
+                'permit': favorite.service.permit.url,
+                'traffic': favorite.service.traffic,
             }
             return favorite

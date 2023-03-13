@@ -523,3 +523,5 @@ class SearchServices(generics.ListCreateAPIView):
     filter_backends = (filters.SearchFilter, )
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
+
+
