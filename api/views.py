@@ -439,11 +439,15 @@ def all_delete(request):
             owner = Concert.objects.get(id=info)
         elif choice=='service':
             owner = Service.objects.get(id=info)
+        elif choice == 'favorite_service':
+            owner = FavoriteService.objects.get(id = info)
+        elif choice =='favorite_concert':
+            owner = FavoriteConcert.objects.get(id=info)
         else:
             data['response']= 'Choice required'
     except owner.DoesNotExist:
         data['response'] = 'no such record in the database'
-        return Response(data=data,status=status.HTTP_404_NOT_FOUND)
+        return Response(data=data,status=status.HTTP_204_NO_CONTENT)
     if request.method=='DELETE':
         check=owner
         operation=check.delete()
