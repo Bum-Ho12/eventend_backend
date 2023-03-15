@@ -59,19 +59,40 @@ class ServiceSerializer(serializers.ModelSerializer):
             return service
 
 class RequestSerializer(serializers.ModelSerializer):
-    # service = serializers.SerializerMethodField('get_request')
+    recipient = serializers.SerializerMethodField('get_recipient')
+    client    = serializers.SerializerMethodField('get_client')
+    service   = serializers.SerializerMethodField('get_service')
     class Meta:
         model = Request
-        fields = '__all__'
+        fields = ['recipient','id','service','client']
         depth=1
-        # def get_request(self, request):
-        #     request = {
-        #         'organizer_id':request.user.id,
-        #         'organizer': request.user.username,
-        #         'organizer_profile_picture':request.user.profile_picture,
-        #         'organizer_media_link': request.user.social_media_link,
-        #     }
-        #     return request
+    def get_client(self, request):
+            request = {
+                'client_id':request.client.id,
+                'client': request.client.username,
+                'client_profile_picture':request.client.profile_picture.url,
+                'client_number': request.client.phone_number,
+            }
+            return request
+
+    def get_recipient(self, request):
+            request = {
+                'recipient_id':request.recipient.id,
+                'recipient': request.recipient.username,
+                'recipient_profile_picture':request.recipient.profile_picture.url,
+                'recipient_number': request.recipient.phone_number,
+            }
+            return request
+
+    def get_service(self, request):
+            request = {
+                'service_id':request.service.id,
+                'service_title': request.service.title,
+                'description': request.service.description,
+                'price': request.service.price,
+                'permit': request.service.permit.url,
+            }
+            return request
 
 class TicketSerializer(serializers.ModelSerializer):
     class Meta:

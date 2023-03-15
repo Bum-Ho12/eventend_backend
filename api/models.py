@@ -62,21 +62,6 @@ TICKET_STATUS = [
     (4, _("Done")),
     ]
 
-class Request(models.Model):
-    client_id                   = models.CharField(max_length=100,blank=True)
-    client_name                 = models.CharField(max_length=100,blank=True)
-    client_profile_picture      = models.CharField(max_length=100, blank=True,null=True)
-    description                 = models.CharField(max_length=200,blank=True)
-    phone_number                = models.CharField(max_length=100,blank=True)
-    service_id                  = models.CharField(max_length=200,blank=True)
-    service_title               = models.CharField(max_length=200,blank=True)
-    # service_requested           = models.ForeignKey(Service,blank=True,on_delete=models.CASCADE,null=True)
-
-    class Meta:
-        verbose_name_plural = 'Requests'
-    def  __str__(self):
-        return f"{self.client_name}"
-
 class Account(AbstractBaseUser, PermissionsMixin):
     phone_regex                    = RegexValidator(regex=r'^\+?1?\d{9,15}$',
                                         message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
@@ -203,3 +188,15 @@ class FavoriteService(models.Model):
 
     class Meta:
         verbose_name_plural = 'FavoriteServices'
+
+class Request(models.Model):
+    description                 = models.CharField(max_length=200,blank=True)
+    client                      = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='client',null=True)
+    recipient                   = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='recipient',null=True)
+    service                     = models.ForeignKey(Service, on_delete = models.CASCADE,null=True)
+    viewed                      = models.BooleanField(blank=True,default=False)
+
+    class Meta:
+        verbose_name_plural = 'Requests'
+    def  __str__(self):
+        return f"{self.service.title}"

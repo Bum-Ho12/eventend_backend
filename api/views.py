@@ -371,17 +371,16 @@ def service_update_post(request):
 @parser_classes([MultiPartParser, FormParser])
 def request_send(request):
     user = request.user
+    recipient_id = request.data.get('id')
+    service_id = request.data.get('service_id')
     if request.method == 'POST':
         try:
             sr= RequestSerializer
             serializer = sr(data=request.data)
+            recipient = Account.objects.get(id= recipient_id)
+            service = Service.objects.get(id = service_id)
             if serializer.is_valid():
-                qs = serializer.save()
-                qs.client_name = user.username
-                qs.client_id = user.id
-                qs.client_profile_picture = user.profile_picture.url
-                qs.phone_number = user.phone_number
-                qs.save()
+                serializer.save(client = user,recipient=recipient,service = service)
                 context = serializer.data
                 return Response(context, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
