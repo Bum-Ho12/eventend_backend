@@ -64,7 +64,7 @@ class RequestSerializer(serializers.ModelSerializer):
     service   = serializers.SerializerMethodField('get_service')
     class Meta:
         model = Request
-        fields = ['recipient','id','service','client','description']
+        fields = ['recipient','id','service','client','description','viewed']
         depth=1
     def get_client(self, request):
             request = {
