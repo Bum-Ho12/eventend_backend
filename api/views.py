@@ -392,6 +392,21 @@ def request_send(request):
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def get_user_requests(request):
+    user = request.user
+    if request.method =='GET':
+        try:
+            requests = Request.objects.filter(recipient = user)
+            sr       = RequestSerializer(requests,many=True)
+            data = sr.data
+            return Response(data=data,status=status.HTTP_200_OK)
+        except Exception as e:
+            data = {}
+            data['response'] = str(e)
+            return Response(data=data,status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
