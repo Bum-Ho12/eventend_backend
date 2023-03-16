@@ -591,7 +591,7 @@ def confirmFeedBack(request):
             context = {'response':True}
             return Response(context, status=status.HTTP_201_CREATED)
         elif option =='concert':
-            concert = Service.objects.get(id=id)
+            concert = Concert.objects.get(id=id)
             count = concert.traffic
             count = count+1
             concert.traffic = count
