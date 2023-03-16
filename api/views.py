@@ -21,6 +21,7 @@ import random
 def confirmNetwork(request):
     if request.method =='GET':
         return Response(data=True,status=status.HTTP_200_OK)
+
 # to send verification email.
 def activateEmail(user,to_email,code):
     send_mail(
@@ -227,12 +228,14 @@ def category_view(request):
             owner = Concert.objects.all()
             sr= ConcertSerializer(owner, many=True)
             data = sr.data
-            return Response(data=data,status=status.HTTP_200_OK)
+            res = reversed(data)
+            return Response(data=res,status=status.HTTP_200_OK)
         elif category=='services':
             owner = Service.objects.all()
             sr= ServiceSerializer(owner, many=True)
             data = sr.data
-            return Response(data=data,status=status.HTTP_200_OK)
+            res = reversed(data)
+            return Response(data=res,status=status.HTTP_200_OK)
     except category.IsEmpty:
         data = {}
         data['response'] = 'no such record in the database'
@@ -402,7 +405,8 @@ def get_user_requests(request):
             requests = Request.objects.filter(recipient = user)
             sr       = RequestSerializer(requests,many=True)
             data = sr.data
-            return Response(data=data,status=status.HTTP_200_OK)
+            res = reversed(data)
+            return Response(data=res,status=status.HTTP_200_OK)
         except Exception as e:
             data = {}
             data['response'] = str(e)
@@ -479,7 +483,8 @@ def concert_favorite_view(request):
         owner = FavoriteConcert.objects.filter(owner = request.user)
         sr= FavoriteConcertSerializer(owner, many=True)
         data = sr.data
-        return Response(data=data,status=status.HTTP_200_OK)
+        res = reversed(data)
+        return Response(data=res,status=status.HTTP_200_OK)
     except Exception as e:
         data = {}
         data['response'] = str(e)
@@ -492,7 +497,8 @@ def service_favorite_view(request):
         owner = FavoriteService.objects.filter(owner = request.user)
         sr= FavoriteServiceSerializer(owner, many=True)
         data = sr.data
-        return Response(data=data,status=status.HTTP_200_OK)
+        res = reversed(data)
+        return Response(data=res,status=status.HTTP_200_OK)
     except Exception as e:
         data = {}
         data['response'] = str(e)
@@ -558,5 +564,39 @@ def account_posts(request):
     data['concerts']    = concert_sr.data
     data['services']    = service_sr.data
     #reverse the dictionary
-    res = OrderedDict(reversed(list(data.items())))
+    res = reversed(data)
     return Response(data = res,status=status.HTTP_200_OK)
+
+
+# send views count and notification feedback
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def confirmFeedBack(request):
+    option = request.data.get('option')
+    id     = request.data.get('id')
+    if request.method =='POST':
+        if option == 'notification':
+            request = Request.objects.get(id=id)
+            viewed = True
+            request.viewed = viewed
+            request.save()
+            context = {'response':True}
+            return Response(context, status=status.HTTP_201_CREATED)
+        elif option=='service':
+            service = Service.objects.get(id=id)
+            count = service.traffic
+            count = count+1
+            service.traffic = count
+            service.save()
+            context = {'response':True}
+            return Response(context, status=status.HTTP_201_CREATED)
+        elif option =='concert':
+            concert = Service.objects.get(id=id)
+            count = concert.traffic
+            count = count+1
+            concert.traffic = count
+            concert.save()
+            context = {'response':True}
+        else:
+            context = {'response':'error'}
+            return Response(context, status=status.HTTP_404_NOT_FOUND)
