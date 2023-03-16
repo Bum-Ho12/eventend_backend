@@ -564,7 +564,7 @@ def account_posts(request):
     data['concerts']    = concert_sr.data
     data['services']    = service_sr.data
     #reverse the dictionary
-    res = reversed(data)
+    res = OrderedDict(reversed(list(data.items())))
     return Response(data = res,status=status.HTTP_200_OK)
 
 
