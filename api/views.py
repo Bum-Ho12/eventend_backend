@@ -1,19 +1,26 @@
-from django.shortcuts import render
-from django.core.mail import  send_mail
+import codecs
+from django.core.files import File
+from django.core.mail import  send_mail,EmailMessage
 from collections import OrderedDict
-# from django.conf import settings
 from rest_framework import generics,filters
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes,parser_classes
 from rest_framework.permissions import  IsAuthenticated, AllowAny
-from rest_framework import permissions
 from .models import (Account,Service,Concert,Ticket,Request,FavoriteConcert,FavoriteService)
 from .serializers import (AccountSerializer,ServiceSerializer,TicketSerializer,ConcertSerializer,RequestSerializer,
     FavoriteConcertSerializer,FavoriteServiceSerializer)
 from  rest_framework.authtoken.models import Token
 from rest_framework import status
 from  rest_framework.parsers import MultiPartParser, FormParser
+# from django.http import FileResponse
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch,cm
+from django.conf import settings
+from reportlab.lib.pagesizes import HALF_LETTER
+import io
 import random
+import string
+
 
 #network confirmation
 @api_view(['GET'])
@@ -26,12 +33,20 @@ def confirmNetwork(request):
 def activateEmail(user,to_email,code):
     send_mail(
         'Account Activation',
-        'Dear ' + user + ', Welcome to Hovelink. To complete Your registration,\n \
+        'Dear ' + user + ', Welcome to Eventend. To complete Your registration,\n \
                     Enter this Code: '+ str(code),
         'settings.EMAIL_HOST_USER',
         [to_email],
         fail_silently= False
     )
+
+def sendEmail(cs,user,to_email):
+    subject = 'Concert Ticket'
+    message = 'Dear ' + user + ', Thank you for trusting us,\n \
+                    Here is your ticket.'
+    mail= EmailMessage(subject,message,settings.EMAIL_HOST_USER,[to_email])
+    mail.attach(cs.name, cs.read())
+    mail.send()
 
 # Create your views here.
 @api_view(['POST'])
@@ -412,39 +427,6 @@ def get_user_requests(request):
             data['response'] = str(e)
             return Response(data=data,status=status.HTTP_404_NOT_FOUND)
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser, FormParser])
-def ticketing(request):
-    user = request.user
-    if request.method == 'POST':
-        try:
-            sr= TicketSerializer
-            serializer = sr(data=request.data)
-            if serializer.is_valid():
-                # ['title','concert_id','concert_picture','assignee_id','assignee_name',
-                #     'ticket_number','assignee_email','status','description','client']
-                ticket_number = random.randint(1000,9999)
-                qs = serializer.save()
-                qs.ticket_number = ticket_number
-                qs.assignee_name = user.username
-                qs.assignee_id = user.id
-                qs.assignee_email = user.email
-                qs.assignee_picture = user.profile_picture.url
-                qs.phone_number = user.phone_number
-                qs.save()
-                context = serializer.data
-                return Response(context, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except:
-            rep = {}
-            rep['response'] = 'no such record in the database'
-            return Response(data=rep,status=status.HTTP_404_NOT_FOUND)
-
-    else:
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-
 # deletes an Ad
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
@@ -600,3 +582,60 @@ def confirmFeedBack(request):
         else:
             context = {'response':'error'}
             return Response(context, status=status.HTTP_404_NOT_FOUND)
+
+
+def ticket_generate(id):
+    ticket = Ticket.objects.get(id = id)
+    buf = f"{ticket.assignee.username}{ticket.ticket_number}.pdf"
+    cs = canvas.Canvas(buf,pagesize=HALF_LETTER)
+    txt_object = cs.beginText(1, 100)
+    txt_object.setTextOrigin(0.7*inch,5*inch)
+    txt_object.setFont('Helvetica',14)
+# using the stylesheet
+
+    ticket_title = f"Concert Title: {ticket.concert.title}"
+    ticket_number = f"Ticket: {ticket.ticket_number}"
+    ticket_name = f"Name of recipient: {ticket.assignee.username}"
+    content = [
+        ticket_title,
+        ticket_number,
+        ticket_name,
+        f"Bought at: {ticket.created_at}"
+    ]
+    for line in content:
+        txt_object.textLine(line)
+        txt_object.textLine('=================================')
+    # in development is http://127.0.0.1:8000/{ticket.assignee.profile_picture.url}
+    cs.drawImage(f'https://eventend.pythonanywhere.com{ticket.assignee.profile_picture.url}',0.8*inch,6 *inch,height=5*cm,width=5*cm)
+    cs.drawText(txt_object)
+    cs.showPage()
+    cs.save()
+    # ticket.updated_at(receipt=cs)
+    with codecs.open(f"{ticket.assignee.username}{ticket.ticket_number}.pdf", "r",encoding='utf-8', errors='ignore') as f:
+        ticket.receipt.save(f"{ticket.assignee.username}{ticket.ticket_number}.pdf",File(f))
+
+    # ticket.receipt = cs
+    ticket.save()
+    sendEmail(ticket.receipt,ticket.assignee.username,ticket.assignee.email)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_ticket(request):
+    user = request.user
+    concert = Concert.objects.get(id = request.data.get('id'))
+    code = random.randint(1000,9999)
+    letter = random.choice(string.ascii_letters)
+    ticket_number =  letter+str(code)
+    if request.method == 'POST':
+        qs = Ticket.objects.create(ticket_number=ticket_number)
+        qs.assignee = user
+        qs.concert = concert
+        # qs.ticket_number = ticket_number
+        qs.save()
+        ticket_generate(qs.id)
+        context = True
+        return Response(context, status=status.HTTP_201_CREATED)
+
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+

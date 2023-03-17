@@ -152,25 +152,19 @@ class Service(models.Model):
         return f"{self.title}"
 
 class Ticket(models.Model):
-    concert_id                     = models.CharField(max_length=100,blank=True)
-    title                          = models.CharField(max_length=200,blank=True)
-    concert_picture                = models.CharField(max_length=100, blank=True,null=True)
-    assignee_id                    = models.CharField(blank=True,max_length=200)
-    assignee_email                 = models.CharField(blank=True,max_length=200)
-    assignee_picture               = models.CharField(max_length = 200,blank=True)
-    assignee_name                  = models.CharField(max_length = 200,blank=True)
-    status                         = models.PositiveSmallIntegerField(
+    concert                     = models.ForeignKey(Concert, on_delete = models.CASCADE,null=True)
+    assignee                    = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='assignee',null=True)
+    status                      = models.PositiveSmallIntegerField(
                                         choices=TICKET_STATUS, blank=True,null=True)
-    ticket_number                  = models.IntegerField(blank=True,null=True)
-    phone_number                   = models.CharField(max_length=17, blank=True)
-    description                    = models.TextField()
-    created_at                     = models.DateTimeField('created at', auto_now_add=True)
-    updated_at                     = models.DateTimeField('updated at', auto_now=True)
+    receipt                     = models.FileField(upload_to='tickets/',blank=True,null=True)
+    ticket_number               = models.TextField(blank=True,null=True)
+    created_at                  = models.DateTimeField('created at', auto_now_add=True)
+    updated_at                  = models.DateTimeField('updated at', auto_now=True)
 
     class Meta:
         verbose_name_plural = 'Tickets'
     def  __str__(self):
-        return f"{self.name}"
+        return f"{self.ticket_number}"
 
 class FavoriteConcert(models.Model):
     owner                       = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE)

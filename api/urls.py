@@ -28,7 +28,7 @@ urlpatterns= [
     # request service and ticketing
     path('request_send/', views.request_send,name='send_request'),
     path('view_notifications/',views.get_user_requests, name = 'get_requests'),
-    path('ticketing/', views.ticketing,name='ticketing'),
+    path('ticketing/', views.get_ticket,name='ticketing'),
     # search functionality
     path('search_concert/', views.SearchConcerts.as_view(),name='search_concert'),
     path('search_service/', views.SearchServices.as_view(),name='search_service'),

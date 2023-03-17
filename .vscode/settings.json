@@ -3,6 +3,9 @@
         "authtoken",
         "cihhg",
         "eventend",
+        "pagesizes",
+        "pdfgen",
+        "reportlab",
         "ywfbizi"
     ]
 }

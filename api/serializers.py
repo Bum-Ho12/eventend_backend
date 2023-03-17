@@ -98,8 +98,7 @@ class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
 
-        fields = ['title','concert_id','concert_picture','assignee_id','assignee_name','assignee_picture',
-                    'ticket_number','assignee_email','status','description','client','phone_number']
+        fields = '__all__'
         depth=1
 
 class FavoriteConcertSerializer(serializers.ModelSerializer):
