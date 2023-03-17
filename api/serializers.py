@@ -55,6 +55,8 @@ class ServiceSerializer(serializers.ModelSerializer):
                 'organizer': service.owner.username,
                 'organizer_profile_picture':service.owner.profile_picture.url,
                 'organizer_media_link': service.owner.social_media_link,
+                'phone_number':service.owner.phone_number,
+                'email':service.owner.email,
             }
             return service
 
@@ -148,6 +150,8 @@ class FavoriteServiceSerializer(serializers.ModelSerializer):
                 'organizer': favorite.owner.username,
                 'organizer_profile_picture':favorite.owner.profile_picture.url,
                 'organizer_media_link': favorite.owner.social_media_link,
+                'phone_number':favorite.owner.phone_number,
+                'email':favorite.owner.email,
             }
             return favorite
 
