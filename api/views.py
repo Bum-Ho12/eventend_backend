@@ -17,7 +17,6 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch,cm
 from django.conf import settings
 from reportlab.lib.pagesizes import HALF_LETTER
-import io
 import random
 import string
 
@@ -586,7 +585,7 @@ def confirmFeedBack(request):
 
 def ticket_generate(id):
     ticket = Ticket.objects.get(id = id)
-    buf = f"{ticket.assignee.username}{ticket.ticket_number}.pdf"
+    buf = f"./media/tickets/{ticket.assignee.username}{ticket.ticket_number}.pdf"
     cs = canvas.Canvas(buf,pagesize=HALF_LETTER)
     txt_object = cs.beginText(1, 100)
     txt_object.setTextOrigin(0.7*inch,5*inch)
@@ -611,8 +610,8 @@ def ticket_generate(id):
     cs.showPage()
     cs.save()
     # ticket.updated_at(receipt=cs)
-    with codecs.open(f"{ticket.assignee.username}{ticket.ticket_number}.pdf", "r",encoding='utf-8', errors='ignore') as f:
-        ticket.receipt.save(f"{ticket.assignee.username}{ticket.ticket_number}.pdf",File(f))
+    with codecs.open(f"./media/tickets/{ticket.assignee.username}{ticket.ticket_number}.pdf", "r",encoding='utf-8', errors='ignore') as f:
+        ticket.receipt.save(f"./media/tickets/{ticket.assignee.username}{ticket.ticket_number}.pdf",File(f))
 
     # ticket.receipt = cs
     ticket.save()
