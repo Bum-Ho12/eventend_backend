@@ -604,7 +604,7 @@ def ticket_generate(id):
             txt_object.textLine(line)
             txt_object.textLine('=================================')
         # in development is http://127.0.0.1:8000{ticket.assignee.profile_picture.url}
-        cs.drawImage(f'http://127.0.0.1:8000{ticket.assignee.profile_picture.url}',0.8*inch,6 *inch,height=5*cm,width=5*cm)
+        cs.drawImage(f'https://eventend.pythonanywhere.com{ticket.assignee.profile_picture.url}',0.8*inch,6 *inch,height=5*cm,width=5*cm)
         cs.drawText(txt_object)
         cs.showPage()
         cs.save()
