@@ -585,37 +585,39 @@ def confirmFeedBack(request):
 
 def ticket_generate(id):
     ticket = Ticket.objects.get(id = id)
-    buf = f"/home/eventend/eventend_backend/media/tickets/{ticket.assignee.username}{ticket.ticket_number}.pdf"
-    cs = canvas.Canvas(buf,pagesize=HALF_LETTER)
-    txt_object = cs.beginText(1, 100)
-    txt_object.setTextOrigin(0.7*inch,5*inch)
-    txt_object.setFont('Helvetica',14)
-# using the stylesheet
+    try:
+        buf = f"./media/tickets/{ticket.assignee.username}{ticket.ticket_number}.pdf"
+        cs = canvas.Canvas(buf,pagesize=HALF_LETTER)
+        txt_object = cs.beginText(1, 100)
+        txt_object.setTextOrigin(0.7*inch,5*inch)
+        txt_object.setFont('Helvetica',14)
 
-    ticket_title = f"Concert Title: {ticket.concert.title}"
-    ticket_number = f"Ticket: {ticket.ticket_number}"
-    ticket_name = f"Name of recipient: {ticket.assignee.username}"
-    content = [
-        ticket_title,
-        ticket_number,
-        ticket_name,
-        f"Bought at: {ticket.created_at}"
-    ]
-    for line in content:
-        txt_object.textLine(line)
-        txt_object.textLine('=================================')
-    # in development is http://127.0.0.1:8000/{ticket.assignee.profile_picture.url}
-    cs.drawImage(f'https://eventend.pythonanywhere.com{ticket.assignee.profile_picture.url}',0.8*inch,6 *inch,height=5*cm,width=5*cm)
-    cs.drawText(txt_object)
-    cs.showPage()
-    cs.save()
-    # ticket.updated_at(receipt=cs)
-    with codecs.open(f"/home/eventend/eventend_backend/media/tickets/{ticket.assignee.username}{ticket.ticket_number}.pdf", "r",encoding='utf-8', errors='ignore') as f:
-        ticket.receipt.save(f"./media/tickets/{ticket.assignee.username}{ticket.ticket_number}.pdf",File(f))
+        ticket_title = f"Concert Title: {ticket.concert.title}"
+        ticket_number = f"Ticket: {ticket.ticket_number}"
+        ticket_name = f"Name of recipient: {ticket.assignee.username}"
+        content = [
+            ticket_title,
+            ticket_number,
+            ticket_name,
+            f"Bought at: {ticket.created_at}"
+        ]
+        for line in content:
+            txt_object.textLine(line)
+            txt_object.textLine('=================================')
+        # in development is http://127.0.0.1:8000/{ticket.assignee.profile_picture.url}
+        cs.drawImage(f'https://eventend.pythonanywhere.com{ticket.assignee.profile_picture.url}',0.8*inch,6 *inch,height=5*cm,width=5*cm)
+        cs.drawText(txt_object)
+        cs.showPage()
+        cs.save()
+        # ticket.updated_at(receipt=cs)
+        with codecs.open(f"./media/tickets/{ticket.assignee.username}{ticket.ticket_number}.pdf", "r",encoding='utf-8', errors='ignore') as f:
+            ticket.receipt.save(f"./media/tickets/{ticket.assignee.username}{ticket.ticket_number}.pdf",File(f))
 
-    # ticket.receipt = cs
-    ticket.save()
-    sendEmail(ticket.receipt,ticket.assignee.username,ticket.assignee.email)
+        # ticket.receipt = cs
+        ticket.save()
+        sendEmail(ticket.receipt,ticket.assignee.username,ticket.assignee.email)
+    except :
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
