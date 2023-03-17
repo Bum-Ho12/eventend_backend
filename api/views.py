@@ -1,4 +1,5 @@
 import codecs
+from django.core.files.base import ContentFile
 from django.core.files import File
 from django.core.mail import  send_mail,EmailMessage
 from collections import OrderedDict
@@ -12,7 +13,7 @@ from .serializers import (AccountSerializer,ServiceSerializer,TicketSerializer,C
 from  rest_framework.authtoken.models import Token
 from rest_framework import status
 from  rest_framework.parsers import MultiPartParser, FormParser
-# from django.http import FileResponse
+import io
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch,cm
 from django.conf import settings
@@ -315,7 +316,6 @@ def concert_update_post(request):
                     context = serializer.data
                     obj.concert_picture = request.FILES.get('concert_picture')
                     obj.save()
-                    print(obj.concert_picture.url)
                     context['concert_picture'] = obj.concert_picture.url
                     return Response(context, status=status.HTTP_201_CREATED)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -327,7 +327,7 @@ def concert_update_post(request):
                     return Response(context, status=status.HTTP_201_CREATED)
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            print(e)
+            # print(e)
             rep = {}
             rep['response'] = 'no such record in the database'
             return Response(data=rep,status=status.HTTP_404_NOT_FOUND)
@@ -586,12 +586,11 @@ def confirmFeedBack(request):
 def ticket_generate(id):
     ticket = Ticket.objects.get(id = id)
     try:
-        buf = f"./media/tickets/{ticket.assignee.username}{ticket.ticket_number}.pdf"
+        buf = io.BytesIO()
         cs = canvas.Canvas(buf,pagesize=HALF_LETTER)
         txt_object = cs.beginText(1, 100)
         txt_object.setTextOrigin(0.7*inch,5*inch)
         txt_object.setFont('Helvetica',14)
-
         ticket_title = f"Concert Title: {ticket.concert.title}"
         ticket_number = f"Ticket: {ticket.ticket_number}"
         ticket_name = f"Name of recipient: {ticket.assignee.username}"
@@ -604,16 +603,15 @@ def ticket_generate(id):
         for line in content:
             txt_object.textLine(line)
             txt_object.textLine('=================================')
-        # in development is http://127.0.0.1:8000/{ticket.assignee.profile_picture.url}
-        cs.drawImage(f'https://eventend.pythonanywhere.com{ticket.assignee.profile_picture.url}',0.8*inch,6 *inch,height=5*cm,width=5*cm)
+        # in development is http://127.0.0.1:8000{ticket.assignee.profile_picture.url}
+        cs.drawImage(f'http://127.0.0.1:8000{ticket.assignee.profile_picture.url}',0.8*inch,6 *inch,height=5*cm,width=5*cm)
         cs.drawText(txt_object)
         cs.showPage()
         cs.save()
-        # ticket.updated_at(receipt=cs)
-        with codecs.open(f"./media/tickets/{ticket.assignee.username}{ticket.ticket_number}.pdf", "r",encoding='utf-8', errors='ignore') as f:
-            ticket.receipt.save(f"./media/tickets/{ticket.assignee.username}{ticket.ticket_number}.pdf",File(f))
-
-        # ticket.receipt = cs
+        buf.seek(0)
+        pdf = buf.getvalue()
+        buf.close()
+        ticket.receipt.save(f"./media/tickets/{ticket.assignee.username}{ticket.ticket_number}.pdf", ContentFile(pdf))
         ticket.save()
         sendEmail(ticket.receipt,ticket.assignee.username,ticket.assignee.email)
     except :
@@ -631,7 +629,6 @@ def get_ticket(request):
         qs = Ticket.objects.create(ticket_number=ticket_number)
         qs.assignee = user
         qs.concert = concert
-        # qs.ticket_number = ticket_number
         qs.save()
         ticket_generate(qs.id)
         context = True
