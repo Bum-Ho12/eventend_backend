@@ -149,7 +149,6 @@ class FavoriteServiceSerializer(serializers.ModelSerializer):
                 'organizer_id':favorite.owner.id,
                 'organizer': favorite.owner.username,
                 'organizer_profile_picture':favorite.owner.profile_picture.url,
-                'organizer_media_link': favorite.owner.social_media_link,
                 'phone_number':favorite.owner.phone_number,
                 'email':favorite.owner.email,
             }
@@ -160,6 +159,7 @@ class FavoriteServiceSerializer(serializers.ModelSerializer):
                 'service_id':favorite.service.id,
                 'service_title': favorite.service.title,
                 'service_owner_profile':favorite.service.owner.profile_picture.url,
+                'organizer_media_link': favorite.service.owner.social_media_link,
                 'phone_number':favorite.service.owner.phone_number,
                 'email':favorite.service.owner.email,
                 'long': favorite.service.long,
