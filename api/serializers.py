@@ -160,6 +160,8 @@ class FavoriteServiceSerializer(serializers.ModelSerializer):
                 'service_id':favorite.service.id,
                 'service_title': favorite.service.title,
                 'service_owner_profile':favorite.service.owner.profile_picture.url,
+                'phone_number':favorite.service.owner.phone_number,
+                'email':favorite.service.owner.email,
                 'long': favorite.service.long,
                 'lat': favorite.service.lat,
                 'description': favorite.service.description,
