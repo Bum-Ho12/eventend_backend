@@ -268,28 +268,29 @@ def concert_create_post(request):
         files = request.FILES.get('concert_picture')
         try:
             sr= ConcertSerializer
-            if files:
-                request.data.pop('concert_picture')
-                serializer = sr(data=request.data)
-                if serializer.is_valid():
-                    serializer.save(owner = user)
-                    obj = Concert.objects.get(id=serializer.data['id'])
-                    context = serializer.data
-                    obj.concert_picture = request.FILES.get('concert_picture')
-                    obj.save()
-                    context['concert_picture'] = obj.concert_picture.url
-                    return Response(context, status=status.HTTP_201_CREATED)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                serializer = sr(data=request.data)
-                if serializer.is_valid():
-                    serializer.save(owner = user)
-                    context = serializer.data
-                    return Response(context, status=status.HTTP_201_CREATED)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if user.isCustomer == False:
+                if files:
+                    request.data.pop('concert_picture')
+                    serializer = sr(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(owner = user)
+                        obj = Concert.objects.get(id=serializer.data['id'])
+                        context = serializer.data
+                        obj.concert_picture = request.FILES.get('concert_picture')
+                        obj.save()
+                        context['concert_picture'] = obj.concert_picture.url
+                        return Response(context, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    serializer = sr(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(owner = user)
+                        context = serializer.data
+                        return Response(context, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except:
             rep = {}
-            rep['response'] = 'no such record in the database'
+            rep['response'] = 'Error adding post'
             return Response(data=rep,status=status.HTTP_404_NOT_FOUND)
 
     else:
@@ -307,25 +308,26 @@ def concert_update_post(request):
         try:
             sr= ConcertSerializer
             concert = Concert.objects.get(id=info)
-            if files:
-                request.data.pop('concert_picture')
-                serializer = sr(concert,data=request.data,partial=True)
-                if serializer.is_valid():
-                    serializer.save(owner = user)
-                    obj = Concert.objects.get(id=serializer.data['id'])
-                    context = serializer.data
-                    obj.concert_picture = request.FILES.get('concert_picture')
-                    obj.save()
-                    context['concert_picture'] = obj.concert_picture.url
-                    return Response(context, status=status.HTTP_201_CREATED)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                serializer = sr(concert,data=request.data,partial=True)
-                if serializer.is_valid():
-                    serializer.save(owner = user)
-                    context = serializer.data
-                    return Response(context, status=status.HTTP_201_CREATED)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            if user.isCustomer == False:
+                if files:
+                    request.data.pop('concert_picture')
+                    serializer = sr(concert,data=request.data,partial=True)
+                    if serializer.is_valid():
+                        serializer.save(owner = user)
+                        obj = Concert.objects.get(id=serializer.data['id'])
+                        context = serializer.data
+                        obj.concert_picture = request.FILES.get('concert_picture')
+                        obj.save()
+                        context['concert_picture'] = obj.concert_picture.url
+                        return Response(context, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    serializer = sr(concert,data=request.data,partial=True)
+                    if serializer.is_valid():
+                        serializer.save(owner = user)
+                        context = serializer.data
+                        return Response(context, status=status.HTTP_201_CREATED)
+                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             # print(e)
             rep = {}
@@ -343,16 +345,18 @@ def service_create_post(request):
     user = request.user
     if request.method == 'POST':
         try:
-            sr= ServiceSerializer
-            serializer = sr(data=request.data)
-            if serializer.is_valid():
-                serializer.save(owner = user)
-                context = serializer.data
-                return Response(context, status=status.HTTP_201_CREATED)
+            if user.isCustomer == False:
+                sr= ServiceSerializer
+                serializer = sr(data=request.data)
+                if serializer.is_valid():
+                    serializer.save(owner = user)
+                    context = serializer.data
+                    return Response(context, status=status.HTTP_201_CREATED)
+                return Response(context, status=status.HTTP_401_UNAUTHORIZED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except:
             rep = {}
-            rep['response'] = 'no such record in the database'
+            rep['response'] = 'Error adding post'
             return Response(data=rep,status=status.HTTP_404_NOT_FOUND)
 
     else:
@@ -367,15 +371,17 @@ def service_update_post(request):
     info = request.data.get('id')
     if request.method =='PUT':
         try:
-            sr= ServiceSerializer
-            service = Service.objects.get(id=info)
-            serializer = sr(service,data=request.data,partial=True)
-            if serializer.is_valid():
-                serializer.save(owner = user)
-                context = serializer.data
-                return Response(context, status=status.HTTP_201_CREATED)
+            if user.isCustomer == False:
+                sr= ServiceSerializer
+                service = Service.objects.get(id=info)
+                serializer = sr(service,data=request.data,partial=True)
+                if serializer.is_valid():
+                    serializer.save(owner = user)
+                    context = serializer.data
+                    return Response(context, status=status.HTTP_201_CREATED)
+                return Response(context, status=status.HTTP_401_UNAUTHORIZED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except:
+        except :
             rep = {}
             rep['response'] = 'no such record in the database'
             return Response(data=rep,status=status.HTTP_404_NOT_FOUND)
@@ -490,7 +496,6 @@ def service_favorite_view(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_to_favorite(request):
-    user = request.user
     category = request.data.get('category')
     id = request.data.get('id')
     if request.method == 'POST':

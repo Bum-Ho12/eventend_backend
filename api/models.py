@@ -76,6 +76,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     location                       = models.CharField(blank=True,null=True,max_length=100)
     weekday_from                   = models.PositiveSmallIntegerField(choices=WEEKDAYS,null=True,
                                         blank=True)
+    isCustomer                     = models.BooleanField(default=True,blank=True,null=True)
     weekday_to                     = models.PositiveSmallIntegerField(choices=WEEKDAYS,blank=True,
                                         null=True)
     from_hour                      = models.TimeField(null=True)
