@@ -79,6 +79,7 @@ def registration_view(request):
             data['social_media_link']=account.social_media_link
             data['description']=account.description
             data['phone_number']=account.phone_number
+            data['isCustomer']=account.isCustomer
             data['long']=account.long
             data['lat']=account.lat
             token = Token.objects.get(user=account).key
@@ -159,6 +160,7 @@ def user_update_view(request):
             data['social_media_link']=account.social_media_link
             data['description']=account.description
             data['phone_number']=account.phone_number
+            data['isCustomer']=account.isCustomer
             data['long']=account.long
             data['lat']=account.lat
             data['response'] = "successfully updated Account"
@@ -199,6 +201,7 @@ def custom_login(request):
     data['social_media_link']=user.social_media_link
     data['description']=user.description
     data['phone_number']=user.phone_number
+    data['isCustomer']=user.isCustomer
     data['long']=user.long
     data['lat']=user.lat
     return Response(data=data, status=status.HTTP_200_OK)
