@@ -280,7 +280,7 @@ def concert_create_post(request):
                     # print(obj)
                     if user.category==2 and obj==5:
                         rep = 'you can only have 5 posts'
-                        return Response(data=rep,status=status.HTTP_201_CREATED)
+                        return Response(data=rep,status=status.HTTP_406_NOT_ACCEPTABLE)
                     else:
                         if files:
                             request.data.pop('concert_picture')
@@ -384,10 +384,10 @@ def service_create_post(request):
                     # print(obj)
                     if user.category==1 and obj==1:
                         rep = 'you can only post once'
-                        return Response(data=rep,status=status.HTTP_201_CREATED)
+                        return Response(data=rep,status=status.HTTP_406_NOT_ACCEPTABLE)
                     elif user.category==2 and obj==5:
                         rep = 'you can only have 5 posts'
-                        return Response(data=rep,status=status.HTTP_201_CREATED)
+                        return Response(data=rep,status=status.HTTP_406_NOT_ACCEPTABLE)
                     else:
                         sr= ServiceSerializer
                         serializer = sr(data=request.data)
