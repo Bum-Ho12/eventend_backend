@@ -40,13 +40,16 @@ def activateEmail(user,to_email,code):
         fail_silently= False
     )
 
-def sendEmail(cs,user,to_email):
+def sendEmail(cs,user,to_email,id):
     subject = 'Concert Ticket'
     message = 'Dear ' + user + ', Thank you for trusting us,\n \
                     Here is your ticket.'
     mail= EmailMessage(subject,message,settings.EMAIL_HOST_USER,[to_email])
     mail.attach(cs.name, cs.read())
     mail.send()
+    obj = Concert.objects.get(id = id)
+    obj.tickets = obj.tickets+1
+    obj.save()
 
 # Create your views here.
 @api_view(['POST'])
@@ -272,25 +275,52 @@ def concert_create_post(request):
         try:
             sr= ConcertSerializer
             if user.isCustomer == False:
-                if files:
-                    request.data.pop('concert_picture')
-                    serializer = sr(data=request.data)
-                    if serializer.is_valid():
-                        serializer.save(owner = user)
-                        obj = Concert.objects.get(id=serializer.data['id'])
-                        context = serializer.data
-                        obj.concert_picture = request.FILES.get('concert_picture')
-                        obj.save()
-                        context['concert_picture'] = obj.concert_picture.url
-                        return Response(context, status=status.HTTP_201_CREATED)
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-                else:
-                    serializer = sr(data=request.data)
-                    if serializer.is_valid():
-                        serializer.save(owner = user)
-                        context = serializer.data
-                        return Response(context, status=status.HTTP_201_CREATED)
-                    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                try:
+                    obj = Concert.objects.filter(owner = user).count()
+                    # print(obj)
+                    if user.category==2 and obj==5:
+                        rep = 'you can only have 5 posts'
+                        return Response(data=rep,status=status.HTTP_201_CREATED)
+                    else:
+                        if files:
+                            request.data.pop('concert_picture')
+                            serializer = sr(data=request.data)
+                            if serializer.is_valid():
+                                serializer.save(owner = user)
+                                obj = Concert.objects.get(id=serializer.data['id'])
+                                context = serializer.data
+                                obj.concert_picture = request.FILES.get('concert_picture')
+                                obj.save()
+                                context['concert_picture'] = obj.concert_picture.url
+                                return Response(context, status=status.HTTP_201_CREATED)
+                            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                        else:
+                            serializer = sr(data=request.data)
+                            if serializer.is_valid():
+                                serializer.save(owner = user)
+                                context = serializer.data
+                                return Response(context, status=status.HTTP_201_CREATED)
+                            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                except:
+                    if files:
+                            request.data.pop('concert_picture')
+                            serializer = sr(data=request.data)
+                            if serializer.is_valid():
+                                serializer.save(owner = user)
+                                obj = Concert.objects.get(id=serializer.data['id'])
+                                context = serializer.data
+                                obj.concert_picture = request.FILES.get('concert_picture')
+                                obj.save()
+                                context['concert_picture'] = obj.concert_picture.url
+                                return Response(context, status=status.HTTP_201_CREATED)
+                            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        serializer = sr(data=request.data)
+                        if serializer.is_valid():
+                            serializer.save(owner = user)
+                            context = serializer.data
+                            return Response(context, status=status.HTTP_201_CREATED)
+                        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except:
             rep = {}
             rep['response'] = 'Error adding post'
@@ -349,19 +379,36 @@ def service_create_post(request):
     if request.method == 'POST':
         try:
             if user.isCustomer == False:
-                sr= ServiceSerializer
-                serializer = sr(data=request.data)
-                if serializer.is_valid():
-                    serializer.save(owner = user)
-                    context = serializer.data
-                    return Response(context, status=status.HTTP_201_CREATED)
-                return Response(context, status=status.HTTP_401_UNAUTHORIZED)
+                try:
+                    obj = Service.objects.filter(owner = user).count()
+                    # print(obj)
+                    if user.category==1 and obj==1:
+                        rep = 'you can only post once'
+                        return Response(data=rep,status=status.HTTP_201_CREATED)
+                    elif user.category==2 and obj==5:
+                        rep = 'you can only have 5 posts'
+                        return Response(data=rep,status=status.HTTP_201_CREATED)
+                    else:
+                        sr= ServiceSerializer
+                        serializer = sr(data=request.data)
+                        if serializer.is_valid():
+                            serializer.save(owner = user)
+                            context = serializer.data
+                            return Response(context, status=status.HTTP_201_CREATED)
+                        return Response(context, status=status.HTTP_401_UNAUTHORIZED)
+                except:
+                    sr= ServiceSerializer
+                    serializer = sr(data=request.data)
+                    if serializer.is_valid():
+                        serializer.save(owner = user)
+                        context = serializer.data
+                        return Response(context, status=status.HTTP_201_CREATED)
+                    return Response(context, status=status.HTTP_401_UNAUTHORIZED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except:
             rep = {}
             rep['response'] = 'Error adding post'
             return Response(data=rep,status=status.HTTP_404_NOT_FOUND)
-
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -591,7 +638,7 @@ def confirmFeedBack(request):
             return Response(context, status=status.HTTP_404_NOT_FOUND)
 
 
-def ticket_generate(id):
+def ticket_generate(id,concert):
     ticket = Ticket.objects.get(id = id)
     try:
         buf = io.BytesIO()
@@ -621,7 +668,7 @@ def ticket_generate(id):
         buf.close()
         ticket.receipt.save(f"./media/tickets/{ticket.assignee.username}{ticket.ticket_number}.pdf", ContentFile(pdf))
         ticket.save()
-        sendEmail(ticket.receipt,ticket.assignee.username,ticket.assignee.email)
+        sendEmail(ticket.receipt,ticket.assignee.username,ticket.assignee.email,concert)
     except :
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -634,14 +681,18 @@ def get_ticket(request):
     letter = random.choice(string.ascii_letters)
     ticket_number =  letter+str(code)
     if request.method == 'POST':
-        qs = Ticket.objects.create(ticket_number=ticket_number)
-        qs.assignee = user
-        qs.concert = concert
-        qs.save()
-        ticket_generate(qs.id)
-        context = True
-        return Response(context, status=status.HTTP_201_CREATED)
-
+        try:
+            obj = Ticket.objects.get(assignee = user)
+            context ='Already have a ticket'
+            return Response(context,status=status.HTTP_201_CREATED)
+        except:
+            qs = Ticket.objects.create(ticket_number=ticket_number)
+            qs.assignee = user
+            qs.concert = concert
+            qs.save()
+            ticket_generate(qs.id,qs.concert.id)
+            context = True
+            return Response(context, status=status.HTTP_201_CREATED)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
