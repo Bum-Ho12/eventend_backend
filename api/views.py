@@ -448,15 +448,19 @@ def request_send(request):
     service_id = request.data.get('service_id')
     if request.method == 'POST':
         try:
-            sr= RequestSerializer
-            serializer = sr(data=request.data)
             recipient = Account.objects.get(id= recipient_id)
             service = Service.objects.get(id = service_id)
-            if serializer.is_valid():
-                serializer.save(client = user,recipient=recipient,service = service)
-                context = serializer.data
+            if service.owner.email == user.email:
+                context = 'You are not Allowed to send a request'
                 return Response(context, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                sr= RequestSerializer
+                serializer = sr(data=request.data)
+                if serializer.is_valid():
+                    serializer.save(client = user,recipient=recipient,service = service)
+                    context = serializer.data
+                    return Response(context, status=status.HTTP_201_CREATED)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except:
             rep = {}
             rep['response'] = 'no such record in the database'
@@ -681,18 +685,22 @@ def get_ticket(request):
     letter = random.choice(string.ascii_letters)
     ticket_number =  letter+str(code)
     if request.method == 'POST':
-        try:
-            obj = Ticket.objects.get(assignee = user)
+        obj = Ticket.objects.filter(assignee = user)
+        if obj.exists():
             context ='Already have a ticket'
             return Response(context,status=status.HTTP_201_CREATED)
-        except:
-            qs = Ticket.objects.create(ticket_number=ticket_number)
-            qs.assignee = user
-            qs.concert = concert
-            qs.save()
-            ticket_generate(qs.id,qs.concert.id)
-            context = True
-            return Response(context, status=status.HTTP_201_CREATED)
+        else:
+            if concert.owner.email ==user.email:
+                context ='You are not Allowed to get a ticket'
+                return Response(context,status=status.HTTP_201_CREATED)
+            else:
+                qs = Ticket.objects.create(ticket_number=ticket_number)
+                qs.assignee = user
+                qs.concert = concert
+                qs.save()
+                ticket_generate(qs.id,qs.concert.id)
+                context = True
+                return Response(context, status=status.HTTP_201_CREATED)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
