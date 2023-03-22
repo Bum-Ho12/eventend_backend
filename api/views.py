@@ -779,11 +779,11 @@ def get_ticket(request):
         obj = Ticket.objects.filter(assignee = user)
         if obj.exists():
             context ='Already have a ticket'
-            return Response(context,status=status.HTTP_201_CREATED)
+            return Response(context,status=status.HTTP_406_NOT_ACCEPTABLE)
         else:
             if concert.owner.email ==user.email:
                 context ='You are not Allowed to get a ticket'
-                return Response(context,status=status.HTTP_201_CREATED)
+                return Response(context,status=status.HTTP_406_NOT_ACCEPTABLE)
             else:
                 qs = Ticket.objects.create(ticket_number=ticket_number)
                 qs.assignee = user
