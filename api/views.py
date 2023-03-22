@@ -467,7 +467,7 @@ def request_send(request):
             service = Service.objects.get(id = service_id)
             if service.owner.email == user.email:
                 context = 'You are not Allowed to send a request'
-                return Response(context, status=status.HTTP_201_CREATED)
+                return Response(context, status=status.HTTP_406_NOT_ACCEPTABLE)
             else:
                 sr= RequestSerializer
                 serializer = sr(data=request.data)
