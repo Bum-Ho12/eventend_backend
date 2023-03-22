@@ -1,5 +1,5 @@
 from dataclasses import field
-from .models import  (Account,Concert,Service,Ticket,Request,FavoriteConcert,FavoriteService)
+from .models import  (Account,Concert,Service,Ticket,Request,FavoriteConcert,FavoriteService,ConcertComplaint,ServiceComplaint)
 from rest_framework import serializers
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -31,7 +31,7 @@ class ConcertSerializer(serializers.ModelSerializer):
     class Meta:
         model = Concert
         fields = ['id','title','concert','description','price','long','lat','from_hour','to_hour',
-            'web_link','traffic','concert_picture','event_date','location' ,'tickets']
+            'web_link','traffic','concert_picture','event_date','location' ,'tickets','advertise','reports']
         depth=1
     def get_concert(self, concert):
             concert = {
@@ -47,7 +47,7 @@ class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = ['id','title','service','description','price','long','lat' ,
-            'permit','web_link','traffic' ]
+            'permit','web_link','traffic','advertise','reports' ]
         depth=1
     def get_service(self, service):
             service = {
@@ -170,3 +170,54 @@ class FavoriteServiceSerializer(serializers.ModelSerializer):
                 'traffic': favorite.service.traffic,
             }
             return favorite
+
+class ConcertComplaintSerializer(serializers.ModelSerializer):
+    complainant = serializers.SerializerMethodField('get_user')
+    concert   = serializers.SerializerMethodField('get_concert')
+    class Meta:
+        model = ConcertComplaint
+        fields = ['id','complainant','description','concert']
+        depth=1
+    def get_user(self, request):
+            request = {
+                'complainant_id':request.owner.id,
+                'name': request.owner.username,
+                'profile_picture':request.owner.profile_picture.url,
+                'phone_number': request.owner.phone_number,
+            }
+            return request
+    def get_concert(self, request):
+            request = {
+                'concert_id':request.concert.id,
+                'concert_title': request.concert.title,
+                'description': request.concert.description,
+                'price': request.concert.price,
+                'owner': request.concert.owner.email,
+            }
+            return request
+
+class ServiceComplaintSerializer(serializers.ModelSerializer):
+    complainant = serializers.SerializerMethodField('get_user')
+    service   = serializers.SerializerMethodField('get_service')
+    class Meta:
+        model = ServiceComplaint
+        fields = ['id','complainant','service','description']
+        depth=1
+    def get_user(self, request):
+            request = {
+                'complainant_id':request.owner.id,
+                'name': request.owner.username,
+                'profile_picture':request.owner.profile_picture.url,
+                'phone_number': request.owner.phone_number,
+            }
+            return request
+    def get_service(self, request):
+            request = {
+                'service_id':request.service.id,
+                'service_title': request.service.title,
+                'description': request.service.description,
+                'price': request.service.price,
+                'permit': request.service.permit.url,
+            }
+            return request
+

@@ -130,6 +130,8 @@ class Concert(models.Model):
     web_link                    = models.CharField(blank=True,null = True, max_length=100)
     traffic                     = models.IntegerField(blank=True,default= 0)
     tickets                     = models.IntegerField(blank=True,default= 0)
+    advertise                   = models.BooleanField(blank=True, null=True,default=True)
+    reports                     = models.IntegerField(blank=True,null=True, default=0)
 
     class Meta:
         verbose_name_plural = 'Concerts'
@@ -146,6 +148,8 @@ class Service(models.Model):
     permit                      = models.FileField(upload_to='certificates/',blank=True,null=True)
     web_link                    = models.CharField(blank=True,null = True, max_length=200)
     traffic                     = models.IntegerField(blank=True,default= 0)
+    advertise                   = models.BooleanField(blank=True, null=True,default=True)
+    reports                     = models.IntegerField(blank=True,null=True, default=0)
 
     class Meta:
         verbose_name_plural = 'Services'
@@ -194,4 +198,24 @@ class Request(models.Model):
     class Meta:
         verbose_name_plural = 'Requests'
     def  __str__(self):
+        return f"{self.service.title}"
+
+class ConcertComplaint(models.Model):
+    description                = models.CharField(max_length=600, blank=True)
+    owner                      = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='concert_complainant',null=True)
+    concert                    = models.ForeignKey(Concert, on_delete = models.CASCADE,null=True)
+
+    class Meta:
+        verbose_name_plural = 'Concert Complaints'
+    def __str__(self):
+        return f"{self.concert.title}"
+
+class ServiceComplaint(models.Model):
+    description                = models.CharField(max_length=600, blank=True)
+    owner                      = models.ForeignKey(settings.AUTH_USER_MODEL,on_delete=models.CASCADE,related_name='service_complainant',null=True)
+    service                    = models.ForeignKey(Service,on_delete=models.CASCADE,null=True)
+
+    class Meta:
+        verbose_name_plural = 'Service Complaints'
+    def __str__(self):
         return f"{self.service.title}"

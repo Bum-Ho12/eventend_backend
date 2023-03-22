@@ -27,6 +27,7 @@ urlpatterns= [
     # other functionalities
     # request service and ticketing
     path('request_send/', views.request_send,name='send_request'),
+    path('complaint_send/', views.complaint_send,name='send_complaint'),
     path('view_notifications/',views.get_user_requests, name = 'get_requests'),
     path('ticketing/', views.get_ticket,name='ticketing'),
     # search functionality

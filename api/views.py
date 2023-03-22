@@ -7,13 +7,14 @@ from rest_framework import generics,filters
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes,parser_classes
 from rest_framework.permissions import  IsAuthenticated, AllowAny
-from .models import (Account,Service,Concert,Ticket,Request,FavoriteConcert,FavoriteService)
+from .models import (Account,Service,Concert,Ticket,Request,FavoriteConcert,FavoriteService,ConcertComplaint,ServiceComplaint)
 from .serializers import (AccountSerializer,ServiceSerializer,TicketSerializer,ConcertSerializer,RequestSerializer,
-    FavoriteConcertSerializer,FavoriteServiceSerializer)
+    FavoriteConcertSerializer,FavoriteServiceSerializer,ConcertComplaintSerializer,ServiceComplaintSerializer)
 from  rest_framework.authtoken.models import Token
 from rest_framework import status
 from  rest_framework.parsers import MultiPartParser, FormParser
 import io
+import datetime
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch,cm
 from django.conf import settings
@@ -21,6 +22,13 @@ from reportlab.lib.pagesizes import HALF_LETTER
 import random
 import string
 
+
+# current_date = date.today()
+# future_date = current_date + timedelta(days=7)
+
+# orders = Order.objects.filter(
+#     date_ordered__range=(current_date, future_date),
+# )
 
 #network confirmation
 @api_view(['GET'])
@@ -244,9 +252,16 @@ def logout_view(request):
 @permission_classes([AllowAny])
 def category_view(request):
     category = request.data.get('category')
+    today_date = datetime.datetime.now()
     try:
         if category=='concerts':
-            owner = Concert.objects.all()
+            owner = Concert.objects.filter(event_date__gte = today_date)
+            sr= ConcertSerializer(owner, many=True)
+            data = sr.data
+            res = reversed(data)
+            return Response(data=res,status=status.HTTP_200_OK)
+        elif category=='past_concerts':
+            owner = Concert.objects.filter(event_date__lte = today_date)
             sr= ConcertSerializer(owner, many=True)
             data = sr.data
             res = reversed(data)
@@ -257,7 +272,7 @@ def category_view(request):
             data = sr.data
             res = reversed(data)
             return Response(data=res,status=status.HTTP_200_OK)
-    except category.IsEmpty:
+    except category == None:
         data = {}
         data['response'] = 'no such record in the database'
         return Response(data=data,status=status.HTTP_404_NOT_FOUND)
@@ -469,6 +484,49 @@ def request_send(request):
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def complaint_send(request):
+    user = request.user
+    id = request.data.get('id')
+    category = request.data.get('category')
+    if request.method == 'POST':
+        if category =='service':
+            account = ServiceComplaint.objects.filter(owner = user)
+            if account.exists():
+                data = 'You can not report twice'
+                return Response(data= data, status=status.HTTP_406_NOT_ACCEPTABLE)
+            else:
+                service = Service.objects.get(id =id)
+                service_sr = ServiceComplaintSerializer
+                serializer = service_sr(data=request.data)
+                if serializer.is_valid():
+                    serializer.save(owner = user,service = service)
+                    service.reports +=1
+                    service.save()
+                    context = serializer.data
+                    return Response(context, status=status.HTTP_201_CREATED)
+        elif category =='concert':
+            account = ConcertComplaint.objects.filter(owner = user)
+            if account.exists():
+                data = 'You can not report twice'
+                return Response(data= data, status=status.HTTP_406_NOT_ACCEPTABLE)
+            else:
+                concert = Concert.objects.get(id = id)
+                concert_sr = ConcertComplaintSerializer
+                serializer = concert_sr(data=request.data)
+                if serializer.is_valid():
+                    serializer.save(owner = user,concert = concert)
+                    concert.reports +=1
+                    concert.save()
+                    context = serializer.data
+                    return Response(context, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    else:
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser])
@@ -493,28 +551,48 @@ def all_delete(request):
     info = request.data.get('id')
     choice = request.data.get('choice')
     data={}
+    today_date = datetime.datetime.now()
     try:
         if choice=='concert':
             owner = Concert.objects.get(id=info)
+            if owner.event_date < today_date:
+                if request.method=='DELETE':
+                    owner.advertise = False
+                    owner.save()
+                    data['response']='deleted successfully'
+                    return Response(data=data)
         elif choice=='service':
             owner = Service.objects.get(id=info)
+            if request.method=='DELETE':
+                owner.advertise = False
+                owner.save()
+                data['response']='deleted successfully'
+                return Response(data=data)
         elif choice == 'favorite_service':
             owner = FavoriteService.objects.get(id = info)
+            if request.method=='DELETE':
+                check=owner
+                operation=check.delete()
+                if operation:
+                    data['response']='deleted successfully'
+                else:
+                    data['response'] = 'no such record in the database'
+                return Response(data=data)
         elif choice =='favorite_concert':
             owner = FavoriteConcert.objects.get(id=info)
+            if request.method=='DELETE':
+                check=owner
+                operation=check.delete()
+                if operation:
+                    data['response']='deleted successfully'
+                else:
+                    data['response'] = 'no such record in the database'
+                return Response(data=data)
         else:
             data['response']= 'Choice required'
     except owner.DoesNotExist:
         data['response'] = 'no such record in the database'
         return Response(data=data,status=status.HTTP_204_NO_CONTENT)
-    if request.method=='DELETE':
-        check=owner
-        operation=check.delete()
-        if operation:
-            data['response']='deleted successfully'
-        else:
-            data['response'] = 'no such record in the database'
-        return Response(data=data)
 
 # codes for getting each category of favorites
 @api_view(['GET'])
@@ -550,18 +628,27 @@ def service_favorite_view(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_to_favorite(request):
+    user = request.user
     category = request.data.get('category')
     id = request.data.get('id')
     if request.method == 'POST':
         try:
             if category=='concert':
                 concert_to_insert = Concert.objects.get(id = id)
-                model = FavoriteConcert.objects.create(owner = request.user,concert = concert_to_insert)
-                sr = FavoriteConcertSerializer(model)
+                if concert_to_insert.owner.email == user.email:
+                    data = 'You are not allowed to add your own posts to favorites'
+                    return Response(data=data, status=status.HTTP_406_NOT_ACCEPTABLE)
+                else:
+                    model = FavoriteConcert.objects.create(owner = request.user,concert = concert_to_insert)
+                    sr = FavoriteConcertSerializer(model)
             elif category =='service':
                 service_to_insert = Service.objects.get(id = id)
-                model = FavoriteService.objects.create(owner = request.user,service = service_to_insert)
-                sr = FavoriteServiceSerializer(model)
+                if service_to_insert.owner.email == user.email:
+                    data = 'You are not allowed to add your own posts to favorites'
+                    return Response(data=data, status=status.HTTP_406_NOT_ACCEPTABLE)
+                else:
+                    model = FavoriteService.objects.create(owner = request.user,service = service_to_insert)
+                    sr = FavoriteServiceSerializer(model)
             else:
                 return Response(data= 'error in category')
             data = sr.data
@@ -594,14 +681,18 @@ class SearchServices(generics.ListCreateAPIView):
 @permission_classes([IsAuthenticated])
 def account_posts(request):
     user = request.user
+    today_date          = datetime.datetime.now()
     data={}
     concert_query       = Concert.objects.filter(owner= user.id)
+    past_concert_query  = Concert.objects.filter(event_date__lte = today_date)
     service_query       = Service.objects.filter(owner = user.id)
     #serializing
     concert_sr          = ConcertSerializer(concert_query,many = True)
+    past_concerts_sr    = ConcertSerializer(past_concert_query, many =True)
     service_sr          = ServiceSerializer(service_query,many = True)
     #add to dictionary
     data['concerts']    = concert_sr.data
+    data['past_concerts']= past_concerts_sr.data
     data['services']    = service_sr.data
     #reverse the dictionary
     res = OrderedDict(reversed(list(data.items())))
