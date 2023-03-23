@@ -74,15 +74,15 @@ class Account(AbstractBaseUser, PermissionsMixin):
     website                        = models.CharField(blank = True,null=True,max_length=100)
     social_media_link              = models.CharField(blank = True,null=True,max_length=100)
     location                       = models.CharField(blank=True,null=True,max_length=100)
-    weekday_from                   = models.PositiveSmallIntegerField(choices=WEEKDAYS,null=True,
+    weekday_from                   = models.PositiveSmallIntegerField(choices=WEEKDAYS,null=True,default=1,
                                         blank=True)
     isCustomer                     = models.BooleanField(default=True,blank=True,null=True)
-    weekday_to                     = models.PositiveSmallIntegerField(choices=WEEKDAYS,blank=True,
+    weekday_to                     = models.PositiveSmallIntegerField(choices=WEEKDAYS,default=5,blank=True,
                                         null=True)
-    from_hour                      = models.TimeField(null=True,blank = True)
-    to_hour                        = models.TimeField(null=True,blank = True)
-    long                           = models.DecimalField(max_digits=9, decimal_places=6,null=True,blank=True)
-    lat                            = models.DecimalField(max_digits=9, decimal_places=6,null=True,blank = True)
+    from_hour                      = models.TimeField(null=True,blank = True,default='8:00:00')
+    to_hour                        = models.TimeField(null=True,blank = True,default='17:00:00')
+    long                           = models.DecimalField(max_digits=9, decimal_places=6,null=True,blank=True,default=1)
+    lat                            = models.DecimalField(max_digits=9, decimal_places=6,null=True,blank = True,default=1)
     description                    = models.CharField(blank=True,null = True,max_length=400)
     date_joined                    = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
     last_login                     = models.DateTimeField(verbose_name='last login', auto_now=True)
