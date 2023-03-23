@@ -202,7 +202,10 @@ def custom_login(request):
     data = {'token': user_token}
     data['email'] = user.email
     data['username'] = user.username
-    data['profile_picture'] = user.profile_picture.url
+    try:
+        data['profile_picture'] = user.profile_picture.url
+    except:
+        data['profile_picture'] = ''
     data['category'] = user.category
     data['location']=user.location
     data['weekday_from']=user.weekday_from
