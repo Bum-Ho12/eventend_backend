@@ -686,8 +686,8 @@ def account_posts(request):
     user = request.user
     today_date          = datetime.datetime.now()
     data={}
-    concert_query       = Concert.objects.filter(owner= user.id)
-    past_concert_query  = Concert.objects.filter(event_date__lte = today_date)
+    concert_query       = Concert.objects.filter(owner= user.id,event_date__gte=today_date)
+    past_concert_query  = Concert.objects.filter(event_date__lte = today_date,owner= user.id)
     service_query       = Service.objects.filter(owner = user.id)
     #serializing
     concert_sr          = ConcertSerializer(concert_query,many = True)
