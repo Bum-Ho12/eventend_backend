@@ -115,6 +115,7 @@ def verify_user(request):
             owner.is_active = True
             owner.save()
             data['response'] = "successfully Activated your Account"
+            data['is_active'] = owner.is_active
         else:
             data['response'] = "Wrong code Entered, request for verification again."
 
@@ -136,7 +137,6 @@ def re_verification(request):
             data['response'] = 'The verification code has been sent to your email address, {email}.'
         else:
             data['response'] = 'Oops!, There is an error in the verification process.'
-
         return Response(data=data, status= status.HTTP_200_OK)
 
 
