@@ -8,7 +8,7 @@ class AccountSerializer(serializers.ModelSerializer):
         model = Account
         fields =    ['email','username', 'password','profile_picture',
                     'description','website','location','long','lat','phone_number','isCustomer'
-                    ,'social_media_link','category','weekday_from','weekday_to','from_hour','to_hour']
+                    ,'social_media_link','category','weekday_from','weekday_to','from_hour','to_hour','is_active']
         extra_kwargs = {
             'password': {'write_only':True},
 

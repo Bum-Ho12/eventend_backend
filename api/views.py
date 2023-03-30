@@ -91,6 +91,7 @@ def registration_view(request):
             data['description']=account.description
             data['phone_number']=account.phone_number
             data['isCustomer']=account.isCustomer
+            data['is_active'] = account.is_active
             data['long']=account.long
             data['lat']=account.lat
             token = Token.objects.get(user=account).key
@@ -216,6 +217,7 @@ def custom_login(request):
     data['description']=user.description
     data['phone_number']=user.phone_number
     data['isCustomer']=user.isCustomer
+    data['is_active'] = user.is_active
     data['long']=user.long
     data['lat']=user.lat
     return Response(data=data, status=status.HTTP_200_OK)
