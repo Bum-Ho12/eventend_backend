@@ -22,10 +22,6 @@ from reportlab.lib.pagesizes import HALF_LETTER
 import random
 import string
 
-
-# current_date = date.today()
-# future_date = current_date + timedelta(days=7)
-
 # orders = Order.objects.filter(
 #     date_ordered__range=(current_date, future_date),
 # )
@@ -117,6 +113,7 @@ def verify_user(request):
             data['response'] = "successfully Activated your Account"
             data['is_active'] = owner.is_active
         else:
+            re_verification(email)
             data['response'] = "Wrong code Entered, request for verification again."
 
         return Response(data=data, status= status.HTTP_200_OK)
@@ -125,19 +122,18 @@ def verify_user(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 @parser_classes([MultiPartParser, FormParser])
-def re_verification(request):
+def re_verification(email):
     data={}
-    email = request.data.get('email')
+    email = email
     code = random.randint(1000,9999)
-    if request.method == 'POST':
-        owner = Account.objects.get(email = email)
-        if owner.email == email:
-            owner.verification_code = code
-            activateEmail(owner.username,owner.email,code)
-            data['response'] = 'The verification code has been sent to your email address, {email}.'
-        else:
-            data['response'] = 'Oops!, There is an error in the verification process.'
-        return Response(data=data, status= status.HTTP_200_OK)
+    owner = Account.objects.get(email = email)
+    if owner.email == email:
+        owner.verification_code = code
+        activateEmail(owner.username,owner.email,code)
+        data['response'] = 'The verification code has been sent to your email address, {email}.'
+    else:
+        data['response'] = 'Oops!, There is an error in the verification process.'
+    return Response(data=data, status= status.HTTP_200_OK)
 
 
 # updates the details of the user
@@ -719,20 +715,31 @@ def confirmFeedBack(request):
             context = {'response':True}
             return Response(context, status=status.HTTP_201_CREATED)
         elif option=='service':
+            email = request.data.get('email')
             service = Service.objects.get(id=id)
-            count = service.traffic
-            count = count+1
-            service.traffic = count
-            service.save()
-            context = {'response':True}
-            return Response(context, status=status.HTTP_201_CREATED)
+            if email != service.owner.email:
+                count = service.traffic
+                count = count+1
+                service.traffic = count
+                service.save()
+                context = {'response':True}
+                return Response(context, status=status.HTTP_201_CREATED)
+            else:
+                context = {'response':False}
+                return Response(context, status=status.HTTP_201_CREATED)
         elif option =='concert':
+            email = request.data.get('email')
             concert = Concert.objects.get(id=id)
-            count = concert.traffic
-            count = count+1
-            concert.traffic = count
-            concert.save()
-            context = {'response':True}
+            if email != concert.owner.email:
+                count = concert.traffic
+                count = count+1
+                concert.traffic = count
+                concert.save()
+                context = {'response':True}
+                return Response(context, status=status.HTTP_201_CREATED)
+            else:
+                context = {'response':False}
+                return Response(context, status=status.HTTP_201_CREATED)
         else:
             context = {'response':'error'}
             return Response(context, status=status.HTTP_404_NOT_FOUND)
